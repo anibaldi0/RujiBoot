@@ -1,0 +1,12 @@
+# Path: installer/rujiboot.desktop
+[Desktop Entry]
+Version=1.0
+Name=RujiBoot
+Comment=Create bootable USB drives with GNU/Linux
+Exec=rujiboot
+Icon=rujiboot_icon
+Terminal=true
+Type=Application
+Categories=Utility;System;
+StartupNotify=true
+
