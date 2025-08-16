@@ -1,27 +1,26 @@
-# File: core/persistence_without_encryption_core.py
+# path: core/persistence_without_encryption_core.py
 # Description: Creates non-encrypted persistence partition with SWAP for Live USB
 
 import os
 import subprocess
 import time
 from utils.log_util import log_event
+from core.usb_manager import unmount_usb_device  # ← agregado
 
 def prepare_persistence_plain(device_path: str, iso_path: str, t: dict) -> bool:
     """
     Prepares a USB with non-encrypted persistence and a swap partition.
-
-    Args:
-        device_path (str): e.g., /dev/sdb
-        iso_path (str): Path to ISO
-        t (dict): Translations
-
-    Returns:
-        bool: True if success, False otherwise
     """
     print("[*] " + t.get("partitioning_start", "Starting USB partitioning..."))
     log_event(f"PERSISTENCE_INIT (PLAIN) - Device: {device_path}")
 
     try:
+        print("[*] Unmounting all partitions...")
+        unmount_usb_device(device_path)
+
+        print("[*] Wiping first sectors of the USB...")
+        subprocess.run(["sudo", "dd", "if=/dev/zero", f"of={device_path}", "bs=1M", "count=10"], check=True)
+
         subprocess.run(["sudo", "parted", device_path, "--script", "mklabel", "msdos"], check=True)
         subprocess.run(["sudo", "parted", device_path, "--script", "mkpart", "primary", "fat32", "1MiB", "4096MiB"], check=True)
         subprocess.run(["sudo", "parted", device_path, "--script", "mkpart", "primary", "linux-swap", "4096MiB", "5120MiB"], check=True)

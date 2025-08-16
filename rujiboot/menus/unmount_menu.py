@@ -35,13 +35,22 @@ def unmount_menu(t: dict):
     print()
 
     valid_options = [str(i) for i in range(len(mounted) + 1)]
-    validator = GenericValidator(
-        valid_choices=valid_options,
-        error_message=t.get("invalid_option", "[!] Invalid input."),
-        retry_message=t.get("press_enter_continue", "Press Enter to try again...")
-    )
+    validator = GenericValidator()
 
-    choice = validator.get_validated_input(t.get("menu_prompt", "Choose an option: "), allow_empty=False).strip()
+    while True:
+        raw = safe_input(t.get("menu_prompt", "Choose an option: ")).strip()
+        try:
+            choice = validator.validate_input(
+                user_input=raw,
+                expected_type="str",
+                allowed_values=valid_options,
+                allow_empty=False
+            )
+            break
+        except ValueError as e:
+            print(e)
+            safe_input(t.get("press_enter_continue", "Press Enter to try again..."))
+
     if choice == "0":
         return
 
@@ -50,12 +59,18 @@ def unmount_menu(t: dict):
 
     print_selected_usb_info(selected, t)
 
-    print(t.get("unmounting", f"[*] Unmounting {selected['device']}..."))
+    mountpoint = selected.get("mountpoint")
+    if not mountpoint:
+        print(t.get("unmount_failed", f"[!] No mountpoint found for {selected['device']}"))
+        safe_input(t.get("press_enter_return", "Press Enter to return..."))
+        return
+
+    print(t.get("unmounting", f"[*] Unmounting {mountpoint}..."))
 
     try:
-        subprocess.run(["umount", selected["device"]], check=True)
-        print(t.get("unmount_success", f"Successfully unmounted {selected['device']}"))
+        subprocess.run(["umount", mountpoint], check=True)
+        print(t.get("unmount_success", f"Successfully unmounted {mountpoint}"))
     except subprocess.CalledProcessError:
-        print(t.get("unmount_failed", f"[!] Failed to unmount {selected['device']}"))
+        print(t.get("unmount_failed", f"[!] Failed to unmount {mountpoint}"))
 
     safe_input(t.get("press_enter_return", "Press Enter to return..."))

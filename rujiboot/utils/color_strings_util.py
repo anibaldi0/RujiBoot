@@ -1,8 +1,9 @@
 # path: utils/color_strings_util.py
-# ANSI color wrapper without alias resolution (direct string lookup only)
+# Description: ANSI color wrapper with string lookup for translations
 
 import json
 from pathlib import Path
+from utils import constants_util as c
 
 class ColorStrings:
     def __init__(self, color_code: str, strings_file: str = "data/lang/es.json"):
@@ -15,7 +16,7 @@ class ColorStrings:
         with open(strings_path, "r", encoding="utf-8") as f:
             self.strings = json.load(f)
         self.color = color_code
-        self.reset = "\033[0m"
+        self.reset = c.RESET
 
     def get(self, key: str, fallback: str = None) -> str:
         """
@@ -25,7 +26,7 @@ class ColorStrings:
         value = self.strings.get(key, None)
         if value is None:
             if fallback:
-                return f"{WHITE.color}{fallback}{WHITE.reset}"
+                return f"{FG_WHITE}{fallback}{c.RESET}"
             else:
                 return f"{self.color}[?? {key}]{self.reset}"
         return f"{self.color}{value}{self.reset}"
@@ -33,12 +34,15 @@ class ColorStrings:
     def __getitem__(self, key: str) -> str:
         return self.get(key)
 
-# === ANSI color instances ===
-BLACK   = ColorStrings("\033[30m")  # usually avoided
-RED     = ColorStrings("\033[31m")  # errors
-GREEN   = ColorStrings("\033[32m")  # success
-YELLOW  = ColorStrings("\033[33m")  # warnings
-BLUE    = ColorStrings("\033[34m")  # headings
-MAGENTA = ColorStrings("\033[35m")  # custom use
-CYAN    = ColorStrings("\033[36m")  # custom use
-WHITE   = ColorStrings("\033[37m")  # neutral/default
+# === Predefined color instances ===
+BLACK   = ColorStrings(c.FG_BLACK)
+RED     = ColorStrings(c.FG_RED)
+GREEN   = ColorStrings(c.FG_GREEN)
+YELLOW  = ColorStrings(c.FG_YELLOW)
+BLUE    = ColorStrings(c.FG_BLUE)
+MAGENTA = ColorStrings(c.FG_MAGENTA)
+CYAN    = ColorStrings(c.FG_CYAN)
+WHITE   = ColorStrings(c.FG_WHITE)
+
+# Fallback for get() inside class
+FG_WHITE = c.FG_WHITE

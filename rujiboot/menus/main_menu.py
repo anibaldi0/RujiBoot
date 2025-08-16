@@ -32,6 +32,9 @@ def main_menu(t: dict):
         if not log_util.ANONYMOUS_MODE:
             print("5. " + t.get("menu_logs", "View logs"))
 
+        if selected_usb is not None:
+            print("6. " + t.get("menu_wipe_usb", "Wipe USB (erase content)"))
+
         print("9. " + t.get("menu_return", "Return to previous menu"))
         print("0. " + t.get("menu_exit", "Exit"))
         print()
@@ -39,6 +42,8 @@ def main_menu(t: dict):
         valid_choices = ["0", "1", "2", "3", "4", "9"]
         if not log_util.ANONYMOUS_MODE:
             valid_choices.append("5")
+        if selected_usb is not None:
+            valid_choices.append("6")
 
         raw_input = safe_input(t.get("menu_prompt", "Choose an option: "))
 
@@ -83,6 +88,11 @@ def main_menu(t: dict):
             log_util.show_logs_menu(t)
             safe_input(t.get("prompt_return", "Press Enter to return..."))
 
+        elif choice == "6" and selected_usb is not None:
+            from menus.wipe_usb_menu import wipe_usb_menu
+            wipe_usb_menu(t)
+            safe_input(t.get("prompt_return", "Press Enter to return..."))
+
         elif choice == "9":
             print(t.get("menu_return_mode", "[*] Returning to mode selection..."))
             from menus.mode_menu import select_mode
@@ -92,4 +102,3 @@ def main_menu(t: dict):
             else:
                 print(t.get("menu_exit", "Exiting..."))
                 break
-

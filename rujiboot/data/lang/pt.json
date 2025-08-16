@@ -143,8 +143,12 @@
   "write_error_readonly": "O dispositivo USB esta em modo somente leitura. Verifique se ha um interruptor fisico.",
   "write_error_permission": "Permissao negada. Execute o RujiBoot com sudo.",
   "write_error_missing": "Arquivo ou dispositivo nao encontrado. Verifique a conexao USB.",
-  "write_error_io": "Erro de E/S. O USB pode estar com defeito ou desconectado."
+  "write_error_io": "Erro de E/S. O USB pode estar com defeito ou desconectado.",
 
+  "menu_wipe_usb": "Apagar completamente o USB (wipe)",
+  "wipe_fast": "Wipe rapido (apenas os primeiros 10 MiB)",
+  "wipe_full": "Wipe completo (todo o USB, mais lento)",
+  "wipe_done": "O USB foi apagado com sucesso."
 
 
 }

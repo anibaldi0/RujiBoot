@@ -1,1 +1,38 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environment
 venv/
+.env/
+
+# Installer files
+*.deb
+*.AppImage
+*.tar.gz
+*.sh~
+
+# Logs
+*.log
+logs/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# IDE/Editor config
+.vscode/
+.idea/
+
+# Python build
+build/
+dist/
+*.egg-info/
+
+# PyInstaller
+*.spec
+
+# Installer artifacts
+installer/usr/
+installer/DEBIAN/

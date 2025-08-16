@@ -1,32 +1,44 @@
-# File: core/persistence_with_encryption_core.py
+# path: core/persistence_with_encryption_core.py
 # Description: Creates encrypted persistence partition with SWAP for Live USB
 
 import os
 import subprocess
 import time
 from utils.log_util import log_event
+from core.usb_manager import get_device_size_bytes, unmount_usb_device  # ← agregado
 
 def prepare_persistence_encrypted(device_path: str, iso_path: str, t: dict, password: str) -> bool:
     """
     Prepares a USB with encrypted persistence and a swap partition.
-
-    Args:
-        device_path (str): e.g., /dev/sdb
-        iso_path (str): Path to ISO
-        t (dict): Translations
-        password (str): Encryption password
-
-    Returns:
-        bool: True if success, False otherwise
     """
     print("[*] " + t.get("partitioning_start", "Starting USB partitioning..."))
     log_event(f"PERSISTENCE_INIT (ENCRYPTED) - Device: {device_path}")
 
     try:
+        print("[*] Unmounting all partitions...")
+        unmount_usb_device(device_path)
+
+        print("[*] Wiping first sectors of the USB...")
+        subprocess.run(["sudo", "dd", "if=/dev/zero", f"of={device_path}", "bs=1M", "count=10"], check=True)
+
+        usb_size_bytes = get_device_size_bytes(device_path)
+        if not usb_size_bytes:
+            print("[!] " + t.get("device_size_error", "Could not determine device size."))
+            return False
+
+        usb_size_mib = usb_size_bytes // (1024 * 1024)
+        if usb_size_mib < 6144:
+            print("[!] USB too small. Minimum required size is 6 GiB.")
+            return False
+
+        part1_end = 4096
+        part2_end = 5120
+        part3_end = usb_size_mib - 4
+
         subprocess.run(["sudo", "parted", device_path, "--script", "mklabel", "msdos"], check=True)
-        subprocess.run(["sudo", "parted", device_path, "--script", "mkpart", "primary", "fat32", "1MiB", "4096MiB"], check=True)
-        subprocess.run(["sudo", "parted", device_path, "--script", "mkpart", "primary", "linux-swap", "4096MiB", "5120MiB"], check=True)
-        subprocess.run(["sudo", "parted", device_path, "--script", "mkpart", "primary", "ext4", "5120MiB", "100%"], check=True)
+        subprocess.run(["sudo", "parted", device_path, "--script", "mkpart", "primary", "fat32", "1MiB", f"{part1_end}MiB"], check=True)
+        subprocess.run(["sudo", "parted", device_path, "--script", "mkpart", "primary", "linux-swap", f"{part1_end}MiB", f"{part2_end}MiB"], check=True)
+        subprocess.run(["sudo", "parted", device_path, "--script", "mkpart", "primary", "ext4", f"{part2_end}MiB", f"{part3_end}MiB"], check=True)
 
         print("[+] " + t.get("partitioning_done", "Partitioning completed."))
         time.sleep(2)
@@ -46,7 +58,6 @@ def prepare_persistence_encrypted(device_path: str, iso_path: str, t: dict, pass
         print("[*] " + t.get("persistence_encrypted", "Creating encrypted persistence..."))
         subprocess.run(["sudo", "cryptsetup", "luksFormat", part_persist], input=f"{password}\n".encode(), check=True)
 
-        # Close if already opened from previous failed run
         try:
             subprocess.run(["sudo", "cryptsetup", "status", "persistence_encrypted"],
                            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

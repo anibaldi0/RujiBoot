@@ -144,8 +144,13 @@
   "write_error_readonly": "El dispositivo USB esta en modo solo lectura. Verifique si tiene un interruptor fisico de proteccion.",
   "write_error_permission": "Permiso denegado. Ejecute RujiBoot con sudo.",
   "write_error_missing": "Archivo o dispositivo no encontrado. Verifique la conexion USB.",
-  "write_error_io": "Error de entrada/salida. El USB podria estar danado o desconectado."
+  "write_error_io": "Error de entrada/salida. El USB podria estar danado o desconectado.",
 
+
+  "menu_wipe_usb": "Borrar completamente el USB (wipe)",
+  "wipe_fast": "Wipe rápido (solo primeros 10 MiB)",
+  "wipe_full": "Wipe completo (todo el USB, más lento)",
+  "wipe_done": "El USB fue borrado correctamente."
 
 
 }

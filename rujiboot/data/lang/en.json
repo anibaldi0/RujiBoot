@@ -143,7 +143,13 @@
   "write_error_readonly": "The USB device is in read-only mode. Check for a physical lock switch.",
   "write_error_permission": "Permission denied. Please run RujiBoot with sudo.",
   "write_error_missing": "Device or file not found. Check USB connection or path.",
-  "write_error_io": "I/O error. The USB may be damaged or disconnected."
+  "write_error_io": "I/O error. The USB may be damaged or disconnected.",
+
+  "menu_wipe_usb": "Wipe USB completely (erase)",
+  "wipe_fast": "Fast wipe (only first 10 MiB)",
+  "wipe_full": "Full wipe (entire USB, slower)",
+  "wipe_done": "The USB was successfully wiped."
+
 
 
 

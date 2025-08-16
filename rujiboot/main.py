@@ -3,6 +3,11 @@
 # Handles startup logic: language selection, dependency check, GUI or CLI dispatch
 
 import sys
+import os
+
+# Ensure program always runs from its own directory (fixes icon launcher issues)
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 from utils.system_check_util import check_required_tools
 from utils.i18n_util import load_translations
 from cli.cli_main import run_cli

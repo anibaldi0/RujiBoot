@@ -1,37 +1,62 @@
 #!/bin/bash
 
-echo "[*] Cleaning old builds..."
-rm -rf build_pkg
+# === RujiBoot Installation Script ===
+# Description: Installs RujiBoot CLI, launcher icon, and desktop shortcut
 
-echo "[*] Creating folder structure..."
-mkdir -p build_pkg/rujiboot_1.0/DEBIAN
-mkdir -p build_pkg/rujiboot_1.0/usr/bin
-mkdir -p build_pkg/rujiboot_1.0/opt/rujiboot
+# Exit on any error
+set -e
 
-echo "[*] Setting permissions..."
-chmod 0755 build_pkg/rujiboot_1.0/DEBIAN
+# Paths
+INSTALL_DIR="/opt/rujiboot"
+DESKTOP_FILE="/usr/share/applications/rujiboot.desktop"
+ICON_FILE="/usr/share/icons/hicolor/128x128/apps/rujiboot_icon.png"
+EXECUTABLE="/usr/local/bin/rujiboot"
 
-echo "[*] Writing control file..."
-cat <<EOF > build_pkg/rujiboot_1.0/DEBIAN/control
-Package: rujiboot
-Version: 1.0
-Section: utils
-Priority: optional
-Architecture: all
-Maintainer: Anibal Caeiro <anibal@nibal.ink>
-Description: RujiBoot - CLI/GUI tool for writing GNU/Linux ISOs to USB drives
+echo "[*] Installing RujiBoot..."
+
+# Create install directory
+sudo mkdir -p "$INSTALL_DIR"
+sudo cp -r cli core data gui logs menus utils "$INSTALL_DIR"
+sudo cp main.py "$INSTALL_DIR"
+sudo cp requirements.txt "$INSTALL_DIR"
+sudo cp -r installer "$INSTALL_DIR"
+
+# Install icon
+sudo cp installer/icons/rujiboot_icon.png "$ICON_FILE"
+
+# Install launcher script
+echo -e "#!/bin/bash\npython3 $INSTALL_DIR/main.py" | sudo tee "$EXECUTABLE" > /dev/null
+sudo chmod +x "$EXECUTABLE"
+
+# Create .desktop launcher
+sudo tee "$DESKTOP_FILE" > /dev/null <<EOF
+[Desktop Entry]
+Name=RujiBoot
+Comment=Create bootable USB drives with GNU/Linux
+Exec=rujiboot
+Icon=rujiboot_icon
+Terminal=true
+Type=Application
+Categories=Utility;System;
+StartupNotify=true
 EOF
-chmod 0644 build_pkg/rujiboot_1.0/DEBIAN/control
 
-echo "[*] Copying project files..."
-rsync -a --exclude=venv --exclude=build_pkg ./ build_pkg/rujiboot_1.0/opt/rujiboot/
+# Make .desktop executable
+sudo chmod +x "$DESKTOP_FILE"
 
-echo "[*] Creating launcher..."
-echo '#!/bin/bash
-python3 /opt/rujiboot/main.py "$@"' > build_pkg/rujiboot_1.0/usr/bin/rujiboot
-chmod +x build_pkg/rujiboot_1.0/usr/bin/rujiboot
+# Update icon cache (optional, ignore error if fails)
+sudo gtk-update-icon-cache /usr/share/icons/hicolor || true
 
-echo "[*] Building .deb package..."
-dpkg-deb --build build_pkg/rujiboot_1.0
+# Detect user's desktop directory dynamically
+DESKTOP_DIR=$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")
 
-echo "[+] Done! Your package is: build_pkg/rujiboot_1.0.deb"
+if [ -d "$DESKTOP_DIR" ]; then
+    cp "$DESKTOP_FILE" "$DESKTOP_DIR/RujiBoot.desktop"
+    chmod +x "$DESKTOP_DIR/RujiBoot.desktop"
+    echo "[+] Desktop icon created at $DESKTOP_DIR/RujiBoot.desktop"
+else
+    echo "[!] Warning: Could not find Desktop directory. Skipping shortcut."
+fi
+
+echo "[+] RujiBoot installed successfully!"
+echo "[+] You can launch it from the applications menu or the Desktop icon."
